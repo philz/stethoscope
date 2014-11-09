@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Holy Moly Java</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <!-- Le styles -->
+    <link href="ext/bootstrap/css/bootstrap.css" rel="stylesheet">
+    <style>
+      body {
+        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+      }
+
+      .code { font-family: Consolas, Lucida Console, monospace; }
+    </style>
+    <link href="ext/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le fav and touch icons -->
+    <link rel="shortcut icon" href="ext/bootstrap/ico/favicon.ico">
+    <link rel="apple-touch-icon-precomposed" sizes="144x144" href="ext/bootstrap/ico/apple-touch-icon-144-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="114x114" href="ext/bootstrap/ico/apple-touch-icon-114-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" sizes="72x72" href="ext/bootstrap/ico/apple-touch-icon-72-precomposed.png">
+    <link rel="apple-touch-icon-precomposed" href="ext/bootstrap/ico/apple-touch-icon-57-precomposed.png">
+  </head>
+
+  <body>
+
+    <div class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+        <div class="container">
+          <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </a>
+          <a class="brand" href="#">Stethoscope</a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+              <!-- ko foreach: tabs -->
+              <li data-bind="attr: { 'class': $data === activeTab() ? 'active' : '' }"><a href="#" data-bind="text: $data, click: activate"></a></li>
+              <!-- /ko -->
+              <!-- non fancy ones -->
+              <li><a href="/data/threads">Threads</a></li>
+              <li><a href="/poorMansProfiler">Poor Man's Profiling</a></li>
+              <li><a href="/json/loadedClasses">Loaded Classes</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+      <div class="row-fluid">
+
+        <!-- Current tab: <span data-bind="text: activeTab()"> </span> -->
+
+        <div class="row-fluid" data-bind="visible: activeTab() === 'home'">
+          <h1>Ye Olde Java Stethoscope!</h1>
+          <p>Welcome!</p>
+
+        </div> <!-- /home -->
+
+        <div data-bind="visible: activeTab() === 'jmx'">
+            <pre data-bind="html: jmx.data"></pre>
+        </div> <!-- /jmx -->
+
+        <div data-bind="visible: activeTab() === 'threads'">
+            <pre data-bind="html: threads.data"></pre>
+        </div> <!-- /threads -->
+
+        <div data-bind="visible: activeTab() === 'classes'">
+          <ul data-bind="foreach: classes">
+            <li><span data-bind="text: name"></li>
+          </ul>
+        </div> <!-- /threads -->
+
+        <div data-bind="visible: activeTab() === 'profiler'">
+        p
+        </div> <!-- /profiler -->
+
+        <div data-bind="visible: activeTab() === 'decompile'">
+            <label>Class</label>
+            <input data-bind="value: decompile.class"></input>
+            <button type="submit" class="btn btn-primary" data-bind="click: decompile.run">Decompile</button>
+            <!-- TODO: should be escaped! -->
+            <pre data-bind="html: decompile.decompiled"></pre>
+        </div> <!-- /profiler -->
+
+        <div data-bind="visible: activeTab() === 'tracer'">
+          <div class="span2">
+          <h2>Active Traces</h2>
+          <ul data-bind="foreach: tracer.traces">
+            <li><span data-bind="text: klass"></span>.<span data-bind="text: method"></span>: <span data-bind="text: value"></span>
+            <button type="button" class="btn btn-danger btn-sm" data-bind="click: self.tracer.delete">Delete</button></li>
+          </ul>
+          <button type="button" class="btn btn-sm" data-bind="click: tracer.refresh">Refresh</button>
+          
+          </div>
+          <div class="span4 offset2">
+          <h2>Add a Trace</h2>
+          <form>
+            <label>Class</label>
+            <input data-bind="value: tracer.class"></input>
+            <label>Method</label>
+            <input data-bind="value: tracer.method"></input>
+
+            <div class="control-group">
+              <label class="control-label">Tracer Type</label>
+              <div class="controls">
+              <label class="radio">
+              <input type="radio" name="optionsRadios" id="optionsRadios1" value="argumentlogger" checked="">
+                Log arguments to method. (Doesn't work yet.)
+              </label>
+              <label class="radio">
+              <input type="radio" name="optionsRadios" id="optionsRadios2" value="timer">
+                Count number of invocations and measure duration.
+              </label>
+              <label class="radio">
+              <input type="radio" name="optionsRadios" id="optionsRadios3" value="custom">
+                Write your own!
+              </label>
+              <textarea class="code" data-bind="value: tracer.code" rows="30" cols="500">
+hey there
+              </textarea>
+              </input>
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary" data-bind="click: tracer.install">Install</button>
+          </form>
+          </div>
+          <div class="span6 offset6">
+          <h2>Log Stuff</h2>
+            <pre data-bind="html: tracer.log"></pre>
+          </div>
+
+        </div> <!-- /tracer -->
+
+        <div data-bind="visible: activeTab() === 'evaluate'">
+          <h2>Execute injected code</h2>
+          <p>A function body is expected.</p>
+            <form method="POST" action="/evaluate">
+            <textarea cols="80" rows="10" name="code">
+            int x = 13;
+            int y = 17;
+            return x + y;
+            </textarea>
+            <input type="submit">
+            </form>
+        </div> <!-- /evaluate -->
+
+      </div> <!-- /row-fluid -->
+    
+    </div> <!-- /container -->
+
+    <!-- Le javascript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="ext/bootstrap/js/jquery.js"></script>
+    <script src="ext/bootstrap/js/bootstrap-transition.js"></script>
+    <script src="ext/bootstrap/js/bootstrap-alert.js"></script>
+    <script src="ext/bootstrap/js/bootstrap-modal.js"></script>
+    <script src="ext/bootstrap/js/bootstrap-dropdown.js"></script>
+    <script src="ext/bootstrap/js/bootstrap-scrollspy.js"></script>
+    <script src="ext/bootstrap/js/bootstrap-tab.js"></script>
+    <script src="ext/bootstrap/js/bootstrap-tooltip.js"></script>
+    <script src="ext/bootstrap/js/bootstrap-popover.js"></script>
+    <script src="ext/bootstrap/js/bootstrap-button.js"></script>
+    <script src="ext/bootstrap/js/bootstrap-collapse.js"></script>
+    <script src="ext/bootstrap/js/bootstrap-carousel.js"></script>
+    <script src="ext/bootstrap/js/bootstrap-typeahead.js"></script>
+
+    <script src="ext/knockout-2.1.0.js"></script>
+    <script src="tool.js"></script>
+
+  </body>
+</html>

@@ -1,0 +1,9 @@
+# Maven output
+target/
+# Eclipse configuration and output (mvn eclipse:eclipse)
+eclipse-classes/
+.settings/
+.classpath
+# vim artifacts
+.*.swp
+.*.swo
